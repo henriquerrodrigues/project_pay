@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
@@ -22,5 +25,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
+
 	defer conn.Close(context.Background())
+
+	if err := conn.Ping(context.Background()); err != nil {
+		log.Fatalf("Erro ao conectar no banco: %v", err)
+	}
 }
