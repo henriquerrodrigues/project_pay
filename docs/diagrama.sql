@@ -87,16 +87,14 @@ CREATE TABLE "pix_keys"(
 ALTER TABLE
     "pix_keys" ADD PRIMARY KEY("id");
 ALTER TABLE
-    "transfers" ADD CONSTRAINT "transfers_receiver_account_id_foreign" FOREIGN KEY("receiver_account_id") REFERENCES "accounts"("participant_id");
+    "transfers" ADD CONSTRAINT "transfers_receiver_account_id_foreign" FOREIGN KEY("receiver_account_id") REFERENCES "accounts"("id");
 ALTER TABLE
     "accounts" ADD CONSTRAINT "accounts_participant_id_foreign" FOREIGN KEY("participant_id") REFERENCES "participants"("id");
 ALTER TABLE
-    "transfers" ADD CONSTRAINT "transfers_sender_account_id_foreign" FOREIGN KEY("sender_account_id") REFERENCES "accounts"("user_id");
+    "transfers" ADD CONSTRAINT "transfers_sender_account_id_foreign" FOREIGN KEY("sender_account_id") REFERENCES "accounts"("id");
 ALTER TABLE
-    "ledger_entries" ADD CONSTRAINT "ledger_entries_account_id_foreign" FOREIGN KEY("account_id") REFERENCES "accounts"("user_id");
+    "ledger_entries" ADD CONSTRAINT "ledger_entries_account_id_foreign" FOREIGN KEY("account_id") REFERENCES "accounts"("id");
 ALTER TABLE
     "accounts" ADD CONSTRAINT "accounts_user_id_foreign" FOREIGN KEY("user_id") REFERENCES "users"("id");
 ALTER TABLE
-    "pix_keys" ADD CONSTRAINT "pix_keys_account_id_foreign" FOREIGN KEY("account_id") REFERENCES "accounts"("user_id");
-ALTER TABLE
-    "ledger_entries" ADD CONSTRAINT "ledger_entries_entry_type_foreign" FOREIGN KEY("entry_type") REFERENCES "transfers"("end_to_end_id");
+    "pix_keys" ADD CONSTRAINT "pix_keys_account_id_foreign" FOREIGN KEY("account_id") REFERENCES "accounts"("id");
