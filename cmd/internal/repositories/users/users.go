@@ -1,31 +1,56 @@
 package users
 
-import "project_pay/cmd/internal/models"
+import (
+	"context"
+	"database/sql"
+	"errors"
 
-type Users struct {
-	users []models.User
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"project_pay/cmd/internal/models"
+)
+
+type Repository struct {
+	db *pgxpool.Pool
 }
 
-func New() *Users {
-	//toda vez que alguém inicializar essa camada
-	return &Users{users: make([]models.User, 0)}
+func New(db *pgxpool.Pool) *Repository {
+	return &Repository{db: db}
 }
 
-func (u Users) GetAll() []models.User {
-	// pega todos os usuários armazenados dentro de users
-	return u.users
+func (r *Repository) Create(ctx context.Context, req models.CreateUserRequest) (uuid.UUID, error) {
+	var id uuid.UUID
+
+	err := r.db.QueryRow(ctx, sqlCreateUser,
+		sql.Named("name", req.Name),
+		sql.Named("email", req.Email),
+		sql.Named("password_hash", req.Password),
+		sql.Named("tax_id", req.TaxID)).Scan(&id)
+	return id, err
 }
 
-//tem que alterar a estrutura, tem que falar que está alterando a ref(*)
-func (u *Users) Add(newUser models.User) {
-	u.users = append(u.users, newUser)
-}
+func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	user := &models.User{}
+	err := r.db.QueryRow(ctx, sqlBuscarID,
+		sql.Named("id", id)).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.TaxID,
+		&user.CreatedAt)
 
-func (u Users) EmailExists(email string) bool {
-	for _, v := range u.users {
-		if v.Email == email {
-			return true
-		}
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
 	}
-	return false
+	return user, err
 }
+
+const sqlCreateUser = `INSERT INTO users (@name, @email, @password_hash, @tax_id)
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING id`
+
+const sqlBuscarID = `SELECT id, name, email, tax_id, created_at
+		 FROM users
+		 WHERE id = $1`

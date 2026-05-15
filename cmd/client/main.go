@@ -12,7 +12,7 @@ import (
 
 func main() {
 	godotenv.Load()
-	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s",
+	connStr := fmt.Sprintf(postgresql,
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_HOST"),
@@ -32,3 +32,5 @@ func main() {
 		log.Fatalf("Erro ao conectar no banco: %v", err)
 	}
 }
+
+const postgresql = "postgresql://%s:%s@%s:%s/%s?sslmode=%s"

@@ -7,22 +7,22 @@ import (
 )
 
 type User struct {
-	ID            uuid.UUID
-	Name          string
-	Email         string
-	Password_hash string
-	Tax_id        string
-	Created_at    time.Time
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	TaxID     int       `json:"tax_id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
+// request body do POST /users
+// Fase 1: password armazenado direto (sem hash). Bcrypt entra na Semana 3.
 type CreateUserRequest struct {
-	Name          string    `json:"name"`
-	Email         string    `json:"email"`
-	Password_hash string    `json:"passwordHash"`
-	Tax_id        string    `json:"taxId"`
-	Created_at    time.Time `json:"created_at"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	TaxID    string `json:"tax_id"`
+	Password string `json:"password_hash"`
 }
 
 type CreateUserResponse struct {
-	NewUserID uuid.UUID `json:"newUserId`
+	ID uuid.UUID `json:"id"`
 }
