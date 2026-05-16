@@ -6,9 +6,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type participants struct {
-	Id         uuid.UUID
-	Ispb       string
-	Name       string
-	Created_at time.Time
+// representa a entidade banco
+type Participant struct {
+	ID        uuid.UUID `json:"id"`
+	Ispb      string    `json:"ispb`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type CreatePaticipantRequest struct {
+	Ispb string `json:"ispb`
+	Name string `json:"name"`
+}
+type CreateParticipantResponse struct {
+	ID uuid.UUID `json:"id"`
 }
