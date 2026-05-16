@@ -8,8 +8,8 @@ import (
 
 type Account struct {
 	ID            uuid.UUID `json:"id"`
-	UserID        uuid.UUID `json:"userId"`
-	ParticipantID uuid.UUID `json:"participantId"`
+	UserID        uuid.UUID `json:"userID"`
+	ParticipantID uuid.UUID `json:"participantID"`
 	AccountNumber string    `json:"accountNumber"`
 	Branch        string    `json:"branch"`
 	AccountType   string    `json:"accountType"`
@@ -18,8 +18,8 @@ type Account struct {
 }
 
 type CreateAccountRequest struct {
-	UserID        uuid.UUID `json:"userId"`
-	ParticipantID uuid.UUID `json:"participantId"`
+	UserID        uuid.UUID `json:"userID"`
+	ParticipantID uuid.UUID `json:"participantID"`
 	AccountNumber string    `json:"accountNumber"`
 	Branch        string    `json:"branch"`
 	AccountType   string    `json:"accountType"`

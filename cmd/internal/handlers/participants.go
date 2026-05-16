@@ -18,7 +18,7 @@ func NewParticipantHandler(repo *participantsrepo.Repository) *ParticipantHandle
 }
 
 func (h *ParticipantHandler) CreateParticipant(w http.ResponseWriter, r *http.Request) {
-	var req models.CreatePaticipantRequest
+	var req models.CreateParticipantRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "body invalid", http.StatusBadRequest)
@@ -27,7 +27,7 @@ func (h *ParticipantHandler) CreateParticipant(w http.ResponseWriter, r *http.Re
 
 	id, err := h.repo.Create(r.Context(), req)
 	if err != nil {
-		http.Error(w, "error ao criar banco", http.StatusInternalServerError)
+		http.Error(w, "erro ao criar participante", http.StatusInternalServerError)
 		return
 	}
 
@@ -45,8 +45,12 @@ func (h *ParticipantHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	participant, err := h.repo.GetByID(r.Context(), id)
-	if err == nil {
-		http.Error(w, "conta não encontrada", http.StatusNotFound)
+	if err != nil {
+		http.Error(w, "erro interno", http.StatusInternalServerError)
+		return
+	}
+	if participant == nil {
+		http.Error(w, "participante não encontrado", http.StatusNotFound)
 		return
 	}
 

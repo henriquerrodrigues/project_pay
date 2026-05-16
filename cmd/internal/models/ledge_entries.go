@@ -6,12 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type LedgeEntries struct {
-	id            uuid.UUID
-	transfer_id   uuid.UUID
-	account_id    uuid.UUID
-	amount        int64
-	entry_type    string
-	balance_after int64
-	created_at    time.Time
+type LedgerEntry struct {
+	ID           uuid.UUID `json:"id"`
+	TransferID   uuid.UUID `json:"transfer_id"`
+	AccountID    uuid.UUID `json:"account_id"`
+	Amount       int64     `json:"amount"`
+	EntryType    string    `json:"entry_type"`
+	BalanceAfter int64     `json:"balance_after"`
+	CreatedAt    time.Time `json:"created_at"`
 }

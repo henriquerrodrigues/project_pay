@@ -14,7 +14,7 @@ type Participant struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type CreatePaticipantRequest struct {
+type CreateParticipantRequest struct {
 	Ispb string `json:"ispb"`
 	Name string `json:"name"`
 }

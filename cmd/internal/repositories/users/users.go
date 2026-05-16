@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/google/uuid"
@@ -22,35 +21,36 @@ func New(db *pgxpool.Pool) *Repository {
 
 func (r *Repository) Create(ctx context.Context, req models.CreateUserRequest) (uuid.UUID, error) {
 	var id uuid.UUID
-
 	err := r.db.QueryRow(ctx, sqlCreateUser,
-		sql.Named("name", req.Name),
-		sql.Named("email", req.Email),
-		sql.Named("password_hash", req.Password),
-		sql.Named("tax_id", req.TaxID)).Scan(&id)
+		req.Name,
+		req.Email,
+		req.Password,
+		req.TaxID,
+	).Scan(&id)
 	return id, err
 }
 
 func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	user := &models.User{}
-	err := r.db.QueryRow(ctx, sqlBuscarID,
-		sql.Named("id", id)).Scan(
+	err := r.db.QueryRow(ctx, sqlGetByID, id).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Email,
 		&user.TaxID,
-		&user.CreatedAt)
-
+		&user.CreatedAt,
+	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 	return user, err
 }
 
-const sqlCreateUser = `INSERT INTO users (@name, @email, @password_hash, @tax_id)
-		 VALUES ($1, $2, $3, $4)
-		 RETURNING id`
+const sqlCreateUser = `
+	INSERT INTO users (name, email, password_hash, tax_id)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id`
 
-const sqlBuscarID = `SELECT id, name, email, tax_id, created_at
-		 FROM users
-		 WHERE id = $1`
+const sqlGetByID = `
+	SELECT id, name, email, tax_id, created_at
+	FROM users
+	WHERE id = $1`

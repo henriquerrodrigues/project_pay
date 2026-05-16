@@ -10,7 +10,7 @@ type User struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	TaxID     int       `json:"tax_id"`
+	TaxID     string    `json:"tax_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

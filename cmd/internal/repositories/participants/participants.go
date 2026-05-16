@@ -18,7 +18,7 @@ func New(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, req models.CreatePaticipantRequest) (uuid.UUID, error) {
+func (r *Repository) Create(ctx context.Context, req models.CreateParticipantRequest) (uuid.UUID, error) {
 	var id uuid.UUID
 
 	err := r.db.QueryRow(ctx, sqlCreateParticipant,
@@ -46,11 +46,11 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*models.Partici
 }
 
 const sqlCreateParticipant = `
-	INSERT INTO participants (id, ispb, name, createdAt)
-	VALUES(@id, @ispb, @name, now())
-`
+	INSERT INTO participants (ispb, name)
+	VALUES ($1, $2)
+	RETURNING id`
 
 const sqlBuscarIDParticipant = `
-	SELECT id, ispb, name, creeatAt
+	SELECT id, ispb, name, created_at
 	FROM participants
 	WHERE id = $1`
