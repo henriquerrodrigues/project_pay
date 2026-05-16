@@ -9,13 +9,13 @@ import (
 // representa a entidade banco
 type Participant struct {
 	ID        uuid.UUID `json:"id"`
-	Ispb      string    `json:"ispb`
+	Ispb      string    `json:"ispb"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
 type CreatePaticipantRequest struct {
-	Ispb string `json:"ispb`
+	Ispb string `json:"ispb"`
 	Name string `json:"name"`
 }
 type CreateParticipantResponse struct {
