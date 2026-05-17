@@ -14,6 +14,7 @@ import (
 	ledgerrepo "project_pay/cmd/internal/repositories/ledger_entries"
 	participantsrepo "project_pay/cmd/internal/repositories/participants"
 	pixkeysrepo "project_pay/cmd/internal/repositories/pix_keys"
+	transfersrepo "project_pay/cmd/internal/repositories/transfers"
 	usersrepo "project_pay/cmd/internal/repositories/users"
 )
 
@@ -41,6 +42,9 @@ func main() {
 	ledgerRepo := ledgerrepo.New(db)
 	ledgerHandler := handlers.NewLedgerEntryHandler(ledgerRepo)
 
+	transferRepo := transfersrepo.New(db)
+	transferHandler := handlers.NewTransferHandler(transferRepo)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /users", userHandler.Create)
 	mux.HandleFunc("GET /users/{id}", userHandler.GetByID)
@@ -51,6 +55,8 @@ func main() {
 	mux.HandleFunc("POST /pix-keys", pixKeyHandler.CreatePixKey)
 	mux.HandleFunc("GET /pix-keys/{key}", pixKeyHandler.GetByKey)
 	mux.HandleFunc("GET /accounts/{id}/statement", ledgerHandler.GetStatement)
+	mux.HandleFunc("POST /transfers", transferHandler.CreateTransfer)
+	mux.HandleFunc("GET /transfers/{id}", transferHandler.GetByID)
 
 	port := os.Getenv("API_PORT")
 	log.Printf("servidor rodando na porta %s", port)
