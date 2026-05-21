@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"project_pay/cmd/internal/models"
 	participantsrepo "project_pay/cmd/internal/repositories/participants"
@@ -27,6 +28,7 @@ func (h *ParticipantHandler) CreateParticipant(w http.ResponseWriter, r *http.Re
 
 	id, err := h.repo.Create(r.Context(), req)
 	if err != nil {
+		log.Printf("erro ao criar participante: %v", err)
 		http.Error(w, "erro ao criar participante", http.StatusInternalServerError)
 		return
 	}

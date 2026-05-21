@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"project_pay/cmd/internal/models"
 	accountsrepo "project_pay/cmd/internal/repositories/accounts"
@@ -26,6 +27,7 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	id, err := h.repo.Create(r.Context(), req)
 	if err != nil {
+		log.Printf("erro ao criar conta: %v", err)
 		http.Error(w, "erro ao criar conta", http.StatusInternalServerError)
 		return
 	}
