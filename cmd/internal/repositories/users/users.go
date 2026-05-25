@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/crypto/bcrypt"
 
 	"project_pay/cmd/internal/models"
 )
@@ -20,11 +21,16 @@ func New(db *pgxpool.Pool) *Repository {
 }
 
 func (r *Repository) Create(ctx context.Context, req models.CreateUserRequest) (uuid.UUID, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
 	var id uuid.UUID
-	err := r.db.QueryRow(ctx, sqlCreateUser,
+	err = r.db.QueryRow(ctx, sqlCreateUser,
 		req.Name,
 		req.Email,
-		req.Password,
+		string(hash),
 		req.TaxID,
 	).Scan(&id)
 	return id, err

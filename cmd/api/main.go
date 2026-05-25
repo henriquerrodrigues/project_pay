@@ -10,7 +10,9 @@ import (
 
 	"project_pay/cmd/internal/database"
 	"project_pay/cmd/internal/handlers"
+	"project_pay/cmd/internal/middleware"
 	accountsrepo "project_pay/cmd/internal/repositories/accounts"
+	authrepo "project_pay/cmd/internal/repositories/authentication"
 	ledgerrepo "project_pay/cmd/internal/repositories/ledger_entries"
 	participantsrepo "project_pay/cmd/internal/repositories/participants"
 	pixkeysrepo "project_pay/cmd/internal/repositories/pix_keys"
@@ -26,6 +28,9 @@ func main() {
 		log.Fatalf("erro ao conectar no banco: %v", err)
 	}
 	defer db.Close()
+
+	authRepo := authrepo.New(db)
+	authHandler := handlers.NewAuthHandler(authRepo)
 
 	userRepo := usersrepo.New(db)
 	userHandler := handlers.NewUserHandler(userRepo)
@@ -46,17 +51,20 @@ func main() {
 	transferHandler := handlers.NewTransferHandler(transferRepo)
 
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("POST /auth/login", authHandler.Login)
 	mux.HandleFunc("POST /users", userHandler.Create)
-	mux.HandleFunc("GET /users/{id}", userHandler.GetByID)
-	mux.HandleFunc("POST /accounts", accountHandler.CreateAccount)
-	mux.HandleFunc("GET /accounts/{id}", accountHandler.GetByID)
-	mux.HandleFunc("POST /participants", participantHandler.CreateParticipant)
-	mux.HandleFunc("GET /participants/{id}", participantHandler.GetByID)
-	mux.HandleFunc("POST /pix-keys", pixKeyHandler.CreatePixKey)
-	mux.HandleFunc("GET /pix-keys/{key}", pixKeyHandler.GetByKey)
-	mux.HandleFunc("GET /accounts/{id}/statement", ledgerHandler.GetStatement)
-	mux.HandleFunc("POST /transfers", transferHandler.CreateTransfer)
-	mux.HandleFunc("GET /transfers/{id}", transferHandler.GetByID)
+
+	mux.HandleFunc("GET /users/{id}", middleware.Auth(userHandler.GetByID))
+	mux.HandleFunc("POST /accounts", middleware.Auth(accountHandler.CreateAccount))
+	mux.HandleFunc("GET /accounts/{id}", middleware.Auth(accountHandler.GetByID))
+	mux.HandleFunc("POST /participants", middleware.Auth(participantHandler.CreateParticipant))
+	mux.HandleFunc("GET /participants/{id}", middleware.Auth(participantHandler.GetByID))
+	mux.HandleFunc("POST /pix-keys", middleware.Auth(pixKeyHandler.CreatePixKey))
+	mux.HandleFunc("GET /pix-keys/{key}", middleware.Auth(pixKeyHandler.GetByKey))
+	mux.HandleFunc("GET /accounts/{id}/statement", middleware.Auth(ledgerHandler.GetStatement))
+	mux.HandleFunc("POST /transfers", middleware.Auth(transferHandler.CreateTransfer))
+	mux.HandleFunc("GET /transfers/{id}", middleware.Auth(transferHandler.GetByID))
 
 	port := os.Getenv("API_PORT")
 	log.Printf("servidor rodando na porta %s", port)
