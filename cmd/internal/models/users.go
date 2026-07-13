@@ -15,12 +15,11 @@ type User struct {
 }
 
 // request body do POST /users
-// Fase 1: password armazenado direto (sem hash). Bcrypt entra na Semana 3.
 type CreateUserRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	TaxID    string `json:"tax_id"`
-	Password string `json:"password_hash"`
+	Password string `json:"password"`
 }
 
 type CreateUserResponse struct {

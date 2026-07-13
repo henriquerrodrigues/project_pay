@@ -2,34 +2,33 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"project_pay/cmd/internal/models"
-	participantsrepo "project_pay/cmd/internal/repositories/participants"
 
 	"github.com/google/uuid"
+
+	"project_pay/cmd/internal/apperrors"
+	"project_pay/cmd/internal/models"
+	participantssvc "project_pay/cmd/internal/services/participants"
 )
 
 type ParticipantHandler struct {
-	repo *participantsrepo.Repository
+	svc *participantssvc.Service
 }
 
-func NewParticipantHandler(repo *participantsrepo.Repository) *ParticipantHandler {
-	return &ParticipantHandler{repo: repo}
+func NewParticipantHandler(svc *participantssvc.Service) *ParticipantHandler {
+	return &ParticipantHandler{svc: svc}
 }
 
 func (h *ParticipantHandler) CreateParticipant(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateParticipantRequest
-
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "body invalid", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("body inválido"))
 		return
 	}
 
-	id, err := h.repo.Create(r.Context(), req)
+	id, err := h.svc.Create(r.Context(), req)
 	if err != nil {
-		log.Printf("erro ao criar participante: %v", err)
-		http.Error(w, "erro ao criar participante", http.StatusInternalServerError)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 
@@ -40,19 +39,14 @@ func (h *ParticipantHandler) CreateParticipant(w http.ResponseWriter, r *http.Re
 
 func (h *ParticipantHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.PathValue("id"))
-
 	if err != nil {
-		http.Error(w, "id inválido", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("id inválido"))
 		return
 	}
 
-	participant, err := h.repo.GetByID(r.Context(), id)
+	participant, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "erro interno", http.StatusInternalServerError)
-		return
-	}
-	if participant == nil {
-		http.Error(w, "participante não encontrado", http.StatusNotFound)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 
