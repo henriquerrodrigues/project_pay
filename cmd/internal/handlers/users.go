@@ -6,28 +6,29 @@ import (
 
 	"github.com/google/uuid"
 
+	"project_pay/cmd/internal/apperrors"
 	"project_pay/cmd/internal/models"
-	usersrepo "project_pay/cmd/internal/repositories/users"
+	userssvc "project_pay/cmd/internal/services/users"
 )
 
 type UserHandler struct {
-	repo *usersrepo.Repository
+	svc *userssvc.Service
 }
 
-func NewUserHandler(repo *usersrepo.Repository) *UserHandler {
-	return &UserHandler{repo: repo}
+func NewUserHandler(svc *userssvc.Service) *UserHandler {
+	return &UserHandler{svc: svc}
 }
 
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "body inválido", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("body inválido"))
 		return
 	}
 
-	id, err := h.repo.Create(r.Context(), req)
+	id, err := h.svc.Create(r.Context(), req)
 	if err != nil {
-		http.Error(w, "erro ao criar usuário", http.StatusInternalServerError)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 
@@ -39,17 +40,13 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, "id inválido", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("id inválido"))
 		return
 	}
 
-	user, err := h.repo.GetByID(r.Context(), id)
+	user, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "erro interno", http.StatusInternalServerError)
-		return
-	}
-	if user == nil {
-		http.Error(w, "usuário não encontrado", http.StatusNotFound)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 

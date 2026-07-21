@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"project_pay/cmd/internal/apperrors"
 	"project_pay/cmd/internal/models"
 	authrepo "project_pay/cmd/internal/repositories/authentication"
 )
@@ -19,21 +20,21 @@ func NewAuthHandler(repo *authrepo.Repository) *AuthHandler {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.AuthJWT
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "body inválido", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("body inválido"))
 		return
 	}
 
 	// busca o usuário e compara a senha via bcrypt
 	userID, ok := h.repo.VerifyCredentials(r.Context(), req.Email, req.Password)
 	if !ok {
-		http.Error(w, "credenciais inválidas", http.StatusUnauthorized)
+		apperrors.WriteHTTP(w, r, apperrors.Unauthorized("credenciais inválidas"))
 		return
 	}
 
 	// gera o token JWT com o user_id nos claims
 	token, err := authrepo.CreateToken(userID)
 	if err != nil {
-		http.Error(w, "erro ao gerar token", http.StatusInternalServerError)
+		apperrors.WriteHTTP(w, r, apperrors.Internal(err))
 		return
 	}
 

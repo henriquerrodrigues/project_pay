@@ -17,8 +17,9 @@ type Account struct {
 	CreatedAt     time.Time `json:"createdAt"`
 }
 
+// CreateAccountRequest é o body do POST /accounts.
+// O dono da conta vem do token (context), nunca do body.
 type CreateAccountRequest struct {
-	UserID        uuid.UUID `json:"userID"`
 	ParticipantID uuid.UUID `json:"participantID"`
 	AccountNumber string    `json:"accountNumber"`
 	Branch        string    `json:"branch"`

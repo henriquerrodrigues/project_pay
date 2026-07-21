@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
+
+	"project_pay/cmd/internal/apperrors"
 	authrepo "project_pay/cmd/internal/repositories/authentication"
 )
 
@@ -13,13 +16,20 @@ type contextKey string
 
 const UserIDKey contextKey = "user_id"
 
+// UserIDFromContext extrai o user_id injetado pelo middleware Auth.
+// Services usam este helper para aplicar ownership.
+func UserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
+	id, ok := ctx.Value(UserIDKey).(uuid.UUID)
+	return id, ok
+}
+
 // Auth é um middleware que envolve handlers que precisam de autenticação.
 // Lê o token do header, valida, extrai o user_id e injeta no context.
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 		if !strings.HasPrefix(header, "Bearer ") {
-			http.Error(w, "token ausente", http.StatusUnauthorized)
+			apperrors.WriteHTTP(w, r, apperrors.Unauthorized("token ausente"))
 			return
 		}
 
@@ -27,11 +37,10 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 		userID, err := authrepo.VerifyToken(tokenString)
 		if err != nil {
-			http.Error(w, "token inválido", http.StatusUnauthorized)
+			apperrors.WriteHTTP(w, r, apperrors.Unauthorized("token inválido"))
 			return
 		}
 
-		// injeta o user_id no context — handlers podem ler com r.Context().Value(middleware.UserIDKey)
 		ctx := context.WithValue(r.Context(), UserIDKey, userID)
 		next(w, r.WithContext(ctx))
 	}
