@@ -18,6 +18,7 @@ import (
 	pixkeysrepo "project_pay/cmd/internal/repositories/pix_keys"
 	transfersrepo "project_pay/cmd/internal/repositories/transfers"
 	usersrepo "project_pay/cmd/internal/repositories/users"
+	userssvc "project_pay/cmd/internal/services/users"
 )
 
 func main() {
@@ -33,7 +34,8 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authRepo)
 
 	userRepo := usersrepo.New(db)
-	userHandler := handlers.NewUserHandler(userRepo)
+	userSvc := userssvc.New(userRepo)
+	userHandler := handlers.NewUserHandler(userSvc)
 
 	accountRepo := accountsrepo.New(db)
 	accountHandler := handlers.NewAccountHandler(accountRepo)
