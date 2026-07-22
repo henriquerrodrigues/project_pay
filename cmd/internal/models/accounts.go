@@ -18,7 +18,6 @@ type Account struct {
 }
 
 type CreateAccountRequest struct {
-	UserID        uuid.UUID `json:"userID"`
 	ParticipantID uuid.UUID `json:"participantID"`
 	AccountNumber string    `json:"accountNumber"`
 	Branch        string    `json:"branch"`

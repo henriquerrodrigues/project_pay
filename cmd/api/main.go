@@ -60,6 +60,7 @@ func main() {
 	mux.HandleFunc("GET /users/{id}", middleware.Auth(userHandler.GetByID))
 	mux.HandleFunc("POST /accounts", middleware.Auth(accountHandler.CreateAccount))
 	mux.HandleFunc("GET /accounts/{id}", middleware.Auth(accountHandler.GetByID))
+	mux.HandleFunc("GET /accounts/", middleware.Auth(accountHandler.ListByUserID))
 	mux.HandleFunc("POST /participants", middleware.Auth(participantHandler.CreateParticipant))
 	mux.HandleFunc("GET /participants/{id}", middleware.Auth(participantHandler.GetByID))
 	mux.HandleFunc("POST /pix-keys", middleware.Auth(pixKeyHandler.CreatePixKey))
