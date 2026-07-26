@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Pay — Glossário e Passo a Passo</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --bg-card: #171a21;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --text-dim: #9aa2b1;
+    --accent: #5b9dff;
+    --ok: #3ecf8e;
+    --wip: #f0b429;
+    --todo: #ff6b6b;
+    --code-bg: #10131a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fa;
+      --bg-card: #ffffff;
+      --border: #e2e5ea;
+      --text: #1c1f26;
+      --text-dim: #5b6270;
+      --accent: #1a63d6;
+      --ok: #157a4d;
+      --wip: #9a6b00;
+      --todo: #c62828;
+      --code-bg: #eef0f3;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 6rem; }
+  header.top {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+  }
+  header.top h1 { margin: 0 0 0.4rem; font-size: 1.9rem; }
+  header.top p { color: var(--text-dim); margin: 0.2rem 0; }
+  #search {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    margin-top: 1.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 1rem;
+  }
+  nav.toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    margin-bottom: 2.5rem;
+  }
+  nav.toc h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-top: 0; }
+  nav.toc ol { columns: 2; padding-left: 1.2rem; margin: 0; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section { margin-bottom: 3rem; }
+  section h2 {
+    font-size: 1.4rem;
+    border-left: 4px solid var(--accent);
+    padding-left: 0.7rem;
+    margin-bottom: 1.2rem;
+  }
+  section h3 { font-size: 1.1rem; margin-top: 1.8rem; }
+
+  .term {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .term[data-hidden="true"] { display: none; }
+  .term .name { font-weight: 600; font-size: 1.05rem; }
+  .term .name code { font-weight: 600; }
+  .term p { margin: 0.5rem 0 0; color: var(--text); }
+  .term .dim { color: var(--text-dim); font-size: 0.92rem; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .badge.ok    { background: color-mix(in srgb, var(--ok) 20%, transparent); color: var(--ok); border: 1px solid var(--ok); }
+  .badge.wip   { background: color-mix(in srgb, var(--wip) 20%, transparent); color: var(--wip); border: 1px solid var(--wip); }
+  .badge.todo  { background: color-mix(in srgb, var(--todo) 20%, transparent); color: var(--todo); border: 1px solid var(--todo); }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+
+  code, pre {
+    background: var(--code-bg);
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  code { padding: 0.1rem 0.35rem; font-size: 0.9em; }
+  pre { padding: 1rem; overflow-x: auto; border: 1px solid var(--border); font-size: 0.88rem; }
+  pre code { background: none; padding: 0; }
+
+  .callout {
+    border-left: 4px solid var(--wip);
+    background: var(--bg-card);
+    padding: 0.9rem 1.2rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+  }
+  .diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  .diagram pre { border: none; margin: 0; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+  .legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.8rem; font-size: 0.9rem; color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>📖 Project Pay — Glossário e Passo a Passo</h1>
+    <p>Motor de pagamentos instantâneos inspirado no PIX. Este documento explica, do zero, os conceitos de domínio, as entidades do sistema, a arquitetura de código e <strong>o que já existe vs. o que ainda está planejado</strong>.</p>
+    <p class="dim">Baseado em: <code>docs/dominio.md</code>, <code>.github/workflows/plans/PLANO_MESTRE.md</code>, migrations e código em <code>cmd/internal/</code>. Última verificação de status: 24/07/2026.</p>
+    <div class="legend">
+      <span><span class="badge ok">implementado</span> já existe e funciona no código</span>
+      <span><span class="badge wip">em andamento</span> começado, incompleto</span>
+      <span><span class="badge todo">planejado</span> ainda não iniciado — documentado por antecipação</span>
+    </div>
+    <input id="search" type="text" placeholder="Filtrar termos (ex: ISPB, ownership, outbox)...">
+  </header>
+
+  <nav class="toc">
+    <h2>Sumário</h2>
+    <ol>
+      <li><a href="#dominio">1. Domínio do PIX (o "mundo real")</a></li>
+      <li><a href="#entidades">2. Entidades do sistema</a></li>
+      <li><a href="#arquitetura">3. Arquitetura de código</a></li>
+      <li><a href="#fluxo">4. Passo a passo — uma transferência de ponta a ponta</a></li>
+      <li><a href="#status">5. Status por recurso (o que existe hoje)</a></li>
+      <li><a href="#planejado">6. Glossário do que vem depois (planejado)</a></li>
+      <li><a href="#alfabetico">7. Índice alfabético</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============================================================ -->
+  <section id="dominio">
+    <h2>1. Domínio do PIX (o "mundo real")</h2>
+    <p>Project Pay simula, em escala reduzida, o ecossistema real do PIX brasileiro. Estes são os conceitos emprestados do mundo real que o sistema modela ou simplifica.</p>
+
+    <div class="term">
+      <div class="name">SPI — Sistema de Pagamentos Instantâneos <span class="badge todo">planejado</span></div>
+      <p>Câmara de compensação e liquidação do PIX operada pelo Banco Central. Processa transferências entre participantes (bancos) em tempo real, 24/7, com liquidação bruta em tempo real (LBTR) — cada transação liquida individualmente, sem lote. Tempo regulatório: menos de 10 segundos ponta a ponta.</p>
+      <p class="dim">No Project Pay hoje, uma única instância do serviço simula "um banco só" — não existe roteamento entre participantes. Isso é o objetivo da <strong>Fase 3</strong> do plano mestre ("SPI simulado").</p>
+    </div>
+
+    <div class="term">
+      <div class="name">DICT — Diretório de Identificadores de Contas Transacionais <span class="badge wip">em andamento</span></div>
+      <p>Banco de dados centralizado do BACEN que mapeia "chave PIX" → conta bancária. Quando alguém digita uma chave, o banco pagador consulta o DICT antes de transferir.</p>
+      <p class="dim">Equivalente simplificado no projeto: entidade <a href="#pixkey"><code>PixKey</code></a> — resolve chave → conta, mas dentro de uma única base, sem portabilidade entre bancos nem <code>claims</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">ISO 20022 <span class="badge todo">planejado</span></div>
+      <p>Padrão internacional de mensagens financeiras baseado em XML. O PIX usa um subconjunto chamado "Pix Payments", com mensagens como <code>pacs.008</code> (instrução de crédito banco-a-banco) e <code>pacs.002</code> (confirmação/status).</p>
+      <p class="dim">Project Pay usa <strong>JSON</strong> em vez de XML por simplicidade de integração HTTP — uma simplificação deliberada, documentada no diário de bordo (Dia 01). A semântica de campos (EndToEndId, ISPB) é preservada mesmo sem o XML real.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">EndToEndId <span class="badge ok">implementado</span></div>
+      <p>Identificador único e imutável de uma transação PIX, do início ao fim (mesmo atravessando bancos diferentes). Formato adotado no projeto: <code>E</code> + ISPB (8 dígitos) + <code>YYYYMMDD</code> + <code>HHMM</code> + sufixo aleatório (11 caracteres).</p>
+      <p class="dim">Exemplo real gerado no projeto: <code>E60074319020260517142300A3F9C12D8</code>. Implementado em <code>repositories/transfers</code>, função <code>generateEndToEndID</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">ISPB — Identificador do Sistema de Pagamentos Brasileiro <span class="badge ok">implementado</span></div>
+      <p>Código de 8 dígitos que o Banco Central atribui a cada instituição financeira participante do sistema de pagamentos — o "CPF do banco". No projeto, vive no campo <code>Participant.Ispb</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Conta Reservas <span class="badge todo">planejado</span></div>
+      <p>Mecanismo real de liquidação: cada banco participante mantém uma conta no BACEN, e a liquidação bruta debita/credita essas contas diretamente, transação por transação.</p>
+      <p class="dim">Não modelado ainda — só faz sentido quando existir mais de um "banco" simulado (Fase 3).</p>
+    </div>
+
+    <div class="term">
+      <div class="name">pacs.008 / pacs.002 <span class="badge todo">planejado</span></div>
+      <p><code>pacs.008</code> é a mensagem "quero transferir X do Banco A pro Banco B"; <code>pacs.002</code> é a confirmação (ou erro) de volta.</p>
+      <p class="dim">Equivalente simplificado hoje: <code>POST /transfers</code> devolve o próprio recurso <code>Transfer</code> com <code>status</code> — sem troca de mensagens entre serviços, porque só existe um serviço.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="entidades">
+    <h2>2. Entidades do sistema</h2>
+    <p>As tabelas/models que existem hoje no banco (ver <code>migrations/</code> e <code>cmd/internal/models/</code>).</p>
+
+    <div class="term" id="user">
+      <div class="name"><code>User</code> <span class="badge ok">implementado</span></div>
+      <p>Dono de uma ou mais contas. Campos: <code>id</code>, <code>name</code>, <code>email</code>, <code>tax_id</code>, <code>created_at</code> (+ senha com hash bcrypt, não exposta no JSON).</p>
+    </div>
+
+    <div class="term" id="participant">
+      <div class="name"><code>Participant</code> <span class="badge ok">implementado</span></div>
+      <p>Representa "o banco" — uma instituição participante do sistema de pagamentos. Campos: <code>id</code>, <code>ispb</code>, <code>name</code>, <code>created_at</code>.</p>
+    </div>
+
+    <div class="term" id="account">
+      <div class="name"><code>Account</code> <span class="badge ok">implementado</span></div>
+      <p>Conta bancária vinculada a um <code>User</code> e a um <code>Participant</code>. Campos: <code>id</code>, <code>userID</code>, <code>participantID</code>, <code>accountNumber</code>, <code>branch</code>, <code>accountType</code> (<code>cacc</code> = corrente, <code>svgs</code> = poupança), <code>balance</code> (inteiro, menor unidade monetária — evita ponto flutuante), <code>createdAt</code>.</p>
+    </div>
+
+    <div class="term" id="transfer">
+      <div class="name"><code>Transfer</code> <span class="badge ok">implementado</span></div>
+      <p>Uma transferência entre duas contas. Campos: <code>id</code>, <code>endtoendID</code>, <code>senderAccountID</code>, <code>receiverAccountID</code>, <code>amount</code>, <code>status</code>, <code>description</code>, <code>createdAt</code>, <code>completedAt</code> (nullable — <code>*time.Time</code>).</p>
+    </div>
+
+    <div class="term" id="ledgerentry">
+      <div class="name"><code>LedgerEntry</code> — lançamento contábil <span class="badge ok">implementado</span></div>
+      <p>Cada <code>Transfer</code> gera dois lançamentos: um <code>DEBIT</code> na conta de origem, um <code>CREDIT</code> na conta de destino. Campos: <code>id</code>, <code>transfer_id</code>, <code>account_id</code>, <code>amount</code>, <code>entry_type</code>, <code>balance_after</code> (saldo após o lançamento — histórico auditável), <code>created_at</code>.</p>
+      <p class="dim">É a base do extrato (<code>GET /accounts/{id}/statement</code>) e do que a Semana 7 do plano mestre vai explorar com window functions.</p>
+    </div>
+
+    <div class="term" id="pixkey">
+      <div class="name"><code>PixKey</code> <span class="badge ok">implementado</span></div>
+      <p>Chave PIX vinculada a uma conta — o equivalente simplificado do DICT. Campos: <code>id</code>, <code>keyType</code>, <code>keyValue</code>, <code>accountID</code>, <code>createdAt</code>.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="arquitetura">
+    <h2>3. Arquitetura de código</h2>
+
+    <div class="diagram">
+<pre>Handler (HTTP)  →  Service (regra de negócio)  →  Repository (SQL puro)
+    ↓                      ↓                              ↓
+parsing JSON      validação, ownership,              queries pgx,
++ status HTTP     apperrors.*                        transações</pre>
+    </div>
+
+    <div class="term">
+      <div class="name">Handler <span class="badge ok">implementado (parcial — só <code>users</code> migrado)</span></div>
+      <p>Faz parsing do JSON de entrada, chama o Service, e repassa o resultado (ou erro) como resposta HTTP. Não decide regra de negócio nem status HTTP — isso vem do erro tipado devolvido pelo service.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Service <span class="badge wip">em andamento</span></div>
+      <p>Camada onde vive a regra de negócio: validação de campos, ownership (dono do recurso), tradução de falha em erro tipado (<code>apperrors</code>). Declara uma <em>interface pequena</em> do repository que precisa, permitindo testes com fakes em memória (sem banco real).</p>
+      <p class="dim">Hoje: <code>services/users</code> completo; <code>services/accounts</code> parcial (só <code>ListByCurrentUser</code>); <code>participants</code>, <code>pix_keys</code>, <code>ledger_entries</code>, <code>transfers</code>, <code>auth</code> ainda não iniciados.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Repository <span class="badge ok">implementado</span></div>
+      <p>Só fala SQL — nenhuma regra de negócio aqui. Usa <code>pgx</code> (não <code>database/sql</code> puro), ver ADR-0001 em <code>docs/adr/</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name"><code>apperrors</code> <span class="badge ok">implementado</span></div>
+      <p>Pacote com o tipo <code>Error</code> (código de máquina + status HTTP + mensagem segura + causa interna não exportada), construtores (<code>NotFound</code>, <code>InvalidInput</code>, <code>Unauthorized</code>, <code>Forbidden</code>, <code>InsufficientFunds</code>, <code>Internal</code>), e <code>WriteHTTP</code> — converte qualquer <code>error</code> na resposta JSON padrão <code>{"code","message","trace_id"}</code>, sem vazar detalhe interno.</p>
+    </div>
+
+    <div class="term">
+      <div class="name"><code>traceid</code> <span class="badge ok">implementado</span></div>
+      <p>Pacote minúsculo que guarda um ID de correlação no <code>context.Context</code>, usando uma chave de tipo não exportado (evita colisão). Existe separado de <code>middleware</code>/<code>apperrors</code> pra evitar ciclo de import entre os dois.</p>
+    </div>
+
+    <div class="term">
+      <div class="name"><code>middleware.Auth</code> + <code>UserIDFromContext</code> <span class="badge wip">em andamento</span></div>
+      <p>Middleware que valida o JWT (Bearer token) e injeta o <code>user_id</code> no context. <code>UserIDFromContext(ctx)</code> é o helper que os services usam pra aplicar ownership.</p>
+      <p class="dim">O middleware em si ainda usa <code>http.Error</code> cru em vez do contrato <code>apperrors</code> — migração planejada junto com o service de <code>auth</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Ownership (dono do recurso) <span class="badge wip">em andamento</span></div>
+      <p>Regra aplicada nos services: recurso inexistente → <code>404 NOT_FOUND</code>; recurso existente mas de outro usuário → <code>403 FORBIDDEN</code>. Aplicado hoje em <code>users.GetByID</code>; planejado para <code>accounts</code>, <code>transfers</code> e <code>ledger_entries</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name"><code>RequestLogger</code> + <code>slog</code> <span class="badge todo">planejado</span></div>
+      <p>Middleware que envolveria o mux inteiro: gera um trace ID por requisição, injeta no header <code>X-Trace-Id</code> e no context, loga método/rota/status/duração em JSON estruturado.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="fluxo">
+    <h2>4. Passo a passo — uma transferência de ponta a ponta (visão atual)</h2>
+    <ol>
+      <li><strong>Login</strong> — <code>POST /auth/login</code> com email/senha → valida via bcrypt → devolve JWT.</li>
+      <li><strong>Criar conta</strong> — <code>POST /accounts</code> (autenticado) → dono vem do token, nunca do body.</li>
+      <li><strong>Consultar contas</strong> — <code>GET /accounts</code> lista as contas do usuário logado.</li>
+      <li><strong>Transferir</strong> — <code>POST /transfers</code>: dentro de uma transação SQL —
+        <ol>
+          <li><code>SELECT ... FOR UPDATE</code> trava a linha da conta de origem</li>
+          <li>valida saldo suficiente</li>
+          <li>gera o <code>EndToEndId</code></li>
+          <li>debita origem, credita destino (<code>UPDATE ... RETURNING</code>)</li>
+          <li>insere o registro em <code>transfers</code></li>
+          <li>insere dois <code>ledger_entries</code> (DEBIT + CREDIT)</li>
+          <li><code>COMMIT</code></li>
+        </ol>
+      </li>
+      <li><strong>Ver extrato</strong> — <code>GET /accounts/{id}/statement</code> lista os <code>ledger_entries</code> da conta.</li>
+    </ol>
+    <div class="callout">
+      ⚠️ <strong>Ponto conhecido de fragilidade (proposital):</strong> o <code>FOR UPDATE</code> evita corrupção de saldo numa única instância de banco, mas <em>não</em> resolve duplicação por retry de rede (o cliente reenviando a mesma transferência). Isso é intencional — a Semana 6 do plano mestre existe justamente pra provar essa e outras falhas antes de corrigi-las na Fase 2.
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="status">
+    <h2>5. Status por recurso (o que existe hoje, 24/07/2026)</h2>
+    <table>
+      <thead><tr><th>Recurso</th><th>Repository</th><th>Service</th><th>Handler migrado</th><th>Ownership</th><th>Testes</th></tr></thead>
+      <tbody>
+        <tr><td><strong>users</strong></td><td>✅</td><td>✅</td><td>✅</td><td>✅ (403/404)</td><td>✅</td></tr>
+        <tr><td><strong>accounts</strong></td><td>✅</td><td>🛠️ parcial (só <code>ListByCurrentUser</code>)</td><td>🔲</td><td>🔲 planejado</td><td>🔲</td></tr>
+        <tr><td><strong>participants</strong></td><td>✅</td><td>🔲</td><td>🔲</td><td>— (catálogo, sem dono)</td><td>🔲</td></tr>
+        <tr><td><strong>pix_keys</strong></td><td>✅</td><td>🔲</td><td>🔲</td><td>— (catálogo, sem dono)</td><td>🔲</td></tr>
+        <tr><td><strong>ledger_entries</strong></td><td>✅</td><td>🔲</td><td>🔲</td><td>🔲 planejado</td><td>🔲</td></tr>
+        <tr><td><strong>transfers</strong></td><td>✅</td><td>🔲</td><td>🔲</td><td>🔲 planejado</td><td>🔲</td></tr>
+        <tr><td><strong>auth</strong></td><td>✅</td><td>🔲 (deixado por último — <code>CreateToken</code> não é método)</td><td>🔲</td><td>n/a</td><td>🔲</td></tr>
+      </tbody>
+    </table>
+    <p class="dim">Legenda: ✅ pronto · 🛠️ parcial · 🔲 planejado, não iniciado.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="planejado">
+    <h2>6. Glossário do que vem depois (planejado, ainda não desenvolvido)</h2>
+    <p>Documentado agora por antecipação — conforme cada item for implementado, troque o selo <span class="badge todo">planejado</span> para <span class="badge ok">implementado</span>.</p>
+
+    <div class="term">
+      <div class="name">Idempotência (chave de idempotência) <span class="badge todo">planejado — Fase 2</span></div>
+      <p>Mecanismo pra garantir que reenviar a mesma requisição (retry de rede) não duplica o efeito. Normalmente: cliente envia uma chave única por operação; servidor guarda numa tabela de deduplicação e recusa/repete a resposta anterior se a chave já foi vista.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Locking pessimista (<code>SELECT FOR UPDATE</code>) <span class="badge ok">implementado (versão simples)</span></div>
+      <p>Trava a linha no banco durante a transação, impedindo leitura/escrita concorrente até o <code>COMMIT</code>. Já usado em <code>transfers</code> hoje; será comparado formalmente com locking otimista na Fase 2.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Locking otimista (versão de linha) <span class="badge todo">planejado — Fase 2</span></div>
+      <p>Em vez de travar a linha, guarda um número de versão; a escrita só é aceita se a versão não mudou desde a leitura. Menos contenção, mas exige lidar com conflito (retry) no nível da aplicação.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Outbox pattern <span class="badge todo">planejado — Fase 2</span></div>
+      <p>Padrão pra publicar eventos de domínio com garantia de entrega: a escrita no banco e a intenção de publicar o evento acontecem na <em>mesma transação</em> (tabela <code>outbox</code>); um processo separado lê essa tabela e publica de fato na fila, evitando o cenário "salvei no banco mas a mensagem se perdeu".</p>
+    </div>
+
+    <div class="term">
+      <div class="name">RabbitMQ <span class="badge todo">planejado — Fase 2</span></div>
+      <p>Mensageria que vai separar o sistema em dois serviços: <code>pagar-api</code> (recebe HTTP) e <code>pagar-processor</code> (consome fila e processa a transferência de fato).</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Redis <span class="badge todo">planejado — Fase 2</span></div>
+      <p>Cache de leitura de saldo (com invalidação cuidadosa) e lock distribuído para operações que atravessam múltiplos serviços.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Padrão Saga <span class="badge todo">planejado — Fase 3</span></div>
+      <p>Estratégia pra manter consistência em operações que atravessam múltiplos serviços/bancos sem transação distribuída clássica: cada etapa tem uma "compensação" (ação reversa) caso uma etapa posterior falhe.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Chaos testing <span class="badge todo">planejado — Fase 3</span></div>
+      <p>Derrubar serviços deliberadamente em produção/staging pra observar e documentar como o sistema se recupera (ou não).</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Keyset pagination <span class="badge todo">planejado — Semana 7</span></div>
+      <p>Estratégia de paginação que usa um cursor (ex: último <code>id</code>+<code>created_at</code> visto) em vez de <code>OFFSET</code>, evitando degradação de performance conforme a tabela cresce.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">k6 (testes de carga) <span class="badge todo">planejado — Semana 6</span></div>
+      <p>Ferramenta usada pra gerar carga concorrente sobre a API e provar cientificamente falhas como saldo negativo (race condition) e débito duplicado (falta de idempotência) — documentadas depois em <code>docs/patologias.md</code>.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Observabilidade (Prometheus/Grafana/OpenTelemetry) <span class="badge todo">planejado — Semanas 9-10 (básico), Fase 3 (completo)</span></div>
+      <p>Métricas (contadores, histogramas, gauges), dashboards e traces distribuídos que atravessam múltiplos serviços — complementa os logs estruturados com trace ID que já existem desde a Semana 3.</p>
+    </div>
+
+    <div class="term">
+      <div class="name">Detecção de fraude (isolation forest / ML) <span class="badge todo">planejado — Fase 4</span></div>
+      <p>Serviço em Python consumindo o stream de eventos do RabbitMQ, treinado com dados sintéticos de fraude injetados propositalmente, capaz de sinalizar transferências suspeitas de volta à API.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="alfabetico">
+    <h2>7. Índice alfabético (referência rápida)</h2>
+    <table>
+      <tbody>
+        <tr><td><strong>apperrors</strong></td><td>pacote de erro de aplicação tipado, ver seção 3</td></tr>
+        <tr><td><strong>Chaos testing</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>Conta Reservas</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>DICT</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>EndToEndId</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>Idempotência</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>ISO 20022</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>ISPB</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>k6</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>Keyset pagination</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>LedgerEntry</strong></td><td>ver seção 2</td></tr>
+        <tr><td><strong>Locking otimista / pessimista</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>Outbox pattern</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>Ownership</strong></td><td>ver seção 3</td></tr>
+        <tr><td><strong>pacs.008 / pacs.002</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>PixKey</strong></td><td>ver seção 2</td></tr>
+        <tr><td><strong>RabbitMQ</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>Redis</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>Saga (padrão)</strong></td><td>ver seção 6</td></tr>
+        <tr><td><strong>SPI</strong></td><td>ver seção 1</td></tr>
+        <tr><td><strong>traceid</strong></td><td>ver seção 3</td></tr>
+        <tr><td><strong>Transfer</strong></td><td>ver seção 2</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>Documento vivo — atualize os selos (<span class="badge ok">implementado</span> / <span class="badge wip">em andamento</span> / <span class="badge todo">planejado</span>) conforme o código avançar. Gerado a partir de <code>docs/dominio.md</code>, <code>.github/workflows/plans/PLANO_MESTRE.md</code> e do código em <code>cmd/internal/</code> na branch <code>pp02</code>.</p>
+  </footer>
+
+</div>
+
+<script>
+  const search = document.getElementById('search');
+  const terms = document.querySelectorAll('.term');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    terms.forEach(t => {
+      const hit = !q || t.textContent.toLowerCase().includes(q);
+      t.dataset.hidden = hit ? "false" : "true";
+    });
+  });
+</script>
+
+</body>
+</html>
