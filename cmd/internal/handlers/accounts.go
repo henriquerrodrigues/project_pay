@@ -2,33 +2,33 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"project_pay/cmd/internal/models"
-	accountsrepo "project_pay/cmd/internal/repositories/accounts"
 
 	"github.com/google/uuid"
+
+	"project_pay/cmd/internal/apperrors"
+	"project_pay/cmd/internal/models"
+	accountssvc "project_pay/cmd/internal/services/accounts"
 )
 
 type AccountHandler struct {
-	repo *accountsrepo.Repository
+	svc *accountssvc.Service
 }
 
-func NewAccountHandler(repo *accountsrepo.Repository) *AccountHandler {
-	return &AccountHandler{repo: repo}
+func NewAccountHandler(svc *accountssvc.Service) *AccountHandler {
+	return &AccountHandler{svc: svc}
 }
 
 func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateAccountRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "body inválido", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("body inválido"))
 		return
 	}
 
-	id, err := h.repo.Create(r.Context(), req)
+	id, err := h.svc.Create(r.Context(), req)
 	if err != nil {
-		log.Printf("erro ao criar conta: %v", err)
-		http.Error(w, "erro ao criar conta", http.StatusInternalServerError)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 
@@ -40,20 +40,28 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, "id inválido", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("id inválido"))
 		return
 	}
 
-	account, err := h.repo.GetByID(r.Context(), id)
+	account, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, "erro interno", http.StatusInternalServerError)
-		return
-	}
-	if account == nil {
-		http.Error(w, "conta não encontrada", http.StatusNotFound)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(account)
+}
+
+// List responde GET /accounts com as contas do user autenticado.
+func (h *AccountHandler) List(w http.ResponseWriter, r *http.Request) {
+	accounts, err := h.svc.ListByCurrentUser(r.Context())
+	if err != nil {
+		apperrors.WriteHTTP(w, r, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(accounts)
 }

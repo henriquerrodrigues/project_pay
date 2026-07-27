@@ -3,29 +3,30 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"project_pay/cmd/internal/apperrors"
 	"project_pay/cmd/internal/models"
-	pixKeyrepo "project_pay/cmd/internal/repositories/pix_keys"
+	pixkeyssvc "project_pay/cmd/internal/services/pix_keys"
 )
 
 type PixKeyHandler struct {
-	repo *pixKeyrepo.Repository
+	svc *pixkeyssvc.Service
 }
 
-func NewPixKeyHandler(repo *pixKeyrepo.Repository) *PixKeyHandler {
-	return &PixKeyHandler{repo: repo}
+func NewPixKeyHandler(svc *pixkeyssvc.Service) *PixKeyHandler {
+	return &PixKeyHandler{svc: svc}
 }
 
 func (h *PixKeyHandler) CreatePixKey(w http.ResponseWriter, r *http.Request) {
 	var req models.CreatePixKeysRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "body invalid", http.StatusBadRequest)
+		apperrors.WriteHTTP(w, r, apperrors.InvalidInput("body inválido"))
 		return
 	}
 
-	id, err := h.repo.Create(r.Context(), req)
+	id, err := h.svc.Create(r.Context(), req)
 	if err != nil {
-		http.Error(w, "erro ao criar chave pix", http.StatusInternalServerError)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 
@@ -37,14 +38,9 @@ func (h *PixKeyHandler) CreatePixKey(w http.ResponseWriter, r *http.Request) {
 func (h *PixKeyHandler) GetByKey(w http.ResponseWriter, r *http.Request) {
 	key := r.PathValue("key")
 
-	pixKey, err := h.repo.GetByKey(r.Context(), key)
+	pixKey, err := h.svc.GetByKey(r.Context(), key)
 	if err != nil {
-		http.Error(w, "erro interno", http.StatusInternalServerError)
-		return
-	}
-
-	if pixKey == nil {
-		http.Error(w, "chave pix não encontrada", http.StatusNotFound)
+		apperrors.WriteHTTP(w, r, err)
 		return
 	}
 

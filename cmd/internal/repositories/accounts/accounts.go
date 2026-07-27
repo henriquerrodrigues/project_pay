@@ -18,7 +18,7 @@ func New(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, req models.CreateAccountRequest, userID uuid.UUID) (uuid.UUID, error) {
+func (r *Repository) Create(ctx context.Context, userID uuid.UUID, req models.CreateAccountRequest) (uuid.UUID, error) {
 	var id uuid.UUID
 
 	err := r.db.QueryRow(ctx, sqlCreateAccount,
@@ -91,4 +91,6 @@ const sqlGetByID = `
 
 const sqlListByUserID = `
 	SELECT id, user_id, participant_id, account_number, branch, account_type, balance, created_at
-	FROM accounts`
+	FROM accounts
+	WHERE user_id = $1
+	ORDER BY created_at`

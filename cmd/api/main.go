@@ -18,6 +18,9 @@ import (
 	pixkeysrepo "project_pay/cmd/internal/repositories/pix_keys"
 	transfersrepo "project_pay/cmd/internal/repositories/transfers"
 	usersrepo "project_pay/cmd/internal/repositories/users"
+	accountssvc "project_pay/cmd/internal/services/accounts"
+	participantssvc "project_pay/cmd/internal/services/participants"
+	pixkeyssvc "project_pay/cmd/internal/services/pix_keys"
 	userssvc "project_pay/cmd/internal/services/users"
 )
 
@@ -38,13 +41,16 @@ func main() {
 	userHandler := handlers.NewUserHandler(userSvc)
 
 	accountRepo := accountsrepo.New(db)
-	accountHandler := handlers.NewAccountHandler(accountRepo)
+	accountSvc := accountssvc.New(accountRepo)
+	accountHandler := handlers.NewAccountHandler(accountSvc)
 
 	participantRepo := participantsrepo.New(db)
-	participantHandler := handlers.NewParticipantHandler(participantRepo)
+	participantSvc := participantssvc.New(participantRepo)
+	participantHandler := handlers.NewParticipantHandler(participantSvc)
 
 	pixKeyRepo := pixkeysrepo.New(db)
-	pixKeyHandler := handlers.NewPixKeyHandler(pixKeyRepo)
+	pixKeySvc := pixkeyssvc.New(pixKeyRepo)
+	pixKeyHandler := handlers.NewPixKeyHandler(pixKeySvc)
 
 	ledgerRepo := ledgerrepo.New(db)
 	ledgerHandler := handlers.NewLedgerEntryHandler(ledgerRepo)
@@ -60,7 +66,7 @@ func main() {
 	mux.HandleFunc("GET /users/{id}", middleware.Auth(userHandler.GetByID))
 	mux.HandleFunc("POST /accounts", middleware.Auth(accountHandler.CreateAccount))
 	mux.HandleFunc("GET /accounts/{id}", middleware.Auth(accountHandler.GetByID))
-	mux.HandleFunc("GET /accounts/", middleware.Auth(accountHandler.ListByUserID))
+	mux.HandleFunc("GET /accounts", middleware.Auth(accountHandler.List))
 	mux.HandleFunc("POST /participants", middleware.Auth(participantHandler.CreateParticipant))
 	mux.HandleFunc("GET /participants/{id}", middleware.Auth(participantHandler.GetByID))
 	mux.HandleFunc("POST /pix-keys", middleware.Auth(pixKeyHandler.CreatePixKey))

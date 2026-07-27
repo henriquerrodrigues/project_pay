@@ -22,9 +22,9 @@ Emojis aparecem para marcar **tipo de conteúdo**, não decoração aleatória �
 
 ---
 
-## 2. Onde paramos — revisão honesta (24/07/2026)
+## 2. Onde paramos — revisão honesta (26/07/2026)
 
-Isso é o que **já existe no código**, verificado contra `git diff main --stat` na branch `pp02`. Nada aqui é otimista — é o estado real.
+Isso é o que **já existe no código**, verificado com `go build ./... && go test ./...` (ambos limpos) na branch `pp02`. Nada aqui é otimista — é o estado real.
 
 ### Fundação (Task 1-4 da Semana 3)
 - ✅ `apperrors` — tipo `Error`, construtores, `WriteHTTP` com trace_id, testado (4 testes)
@@ -36,21 +36,28 @@ Isso é o que **já existe no código**, verificado contra `git diff main --stat
 ### Service de `users` (Task 5)
 - ✅ Completo: `services/users`, testes (6), handler migrado, wiring no `main.go`
 
-### Service de `accounts` (Task 6)
-- ✅ Repository: `Create` recebe `userID`, `ListByUserID` implementado
+### Service de `accounts` (Task 6) — ✅ Missão 3.1 fechada
+- ✅ Repository: `Create` recebe `userID`, `GetByID`, `ListByUserID` implementados
 - ✅ Model: `CreateAccountRequest` sem `UserID` no body
-- 🛠️ Service: só `ListByCurrentUser` implementado. **`Create` e `GetByID` ainda faltam** — discutimos as 6 regras de negócio (validação de campos, `accountType`, ownership 404/403), próximo passo é codar
-- 🔲 Testes do service — não iniciados
-- 🔲 Handler `accounts.go` — não migrado
-- 🔲 Wiring + rota `GET /accounts` no `main.go` — não feito
+- ✅ Service completo: `Create` (validação de campos + `accountType` + userID do token) e `GetByID` (ownership 404/403), além do `ListByCurrentUser` já existente
+- ✅ `accounts_test.go`: 8 casos (create vincula user do token, accountType inválido, campos obrigatórios, sem user no contexto, getByID dono/outro dono/inexistente/sem user, list só as próprias) — todos passando
+- ✅ Handler `accounts.go` migrado pro contrato `apperrors`
+- ✅ Wiring + rotas `POST /accounts`, `GET /accounts/{id}`, `GET /accounts` no `main.go`
+- 🔲 Faltam só as duas perguntas de verificação da Missão 3.1 (ordem validação token→campos, e NotFound vs Forbidden) — responder antes de considerar a missão 100% internalizada, não só "codada"
+
+### Services de `participants` e `pix_keys` (Task 9) — ✅ Missão 3.2 fechada
+- ✅ `services/participants` e `services/pix_keys`: pass-through (sem ownership — catálogo compartilhado), validação de campos obrigatórios, `apperrors.NotFound`/`InvalidInput`/`Internal`
+- ✅ `participants_test.go` (2 casos) e `pixkeys_test.go` (2 casos) — todos passando
+- ✅ Handlers migrados pro contrato `apperrors`
+- ✅ Wiring no `main.go`
 
 ### Ainda não iniciados
-- 🔲 `participants`, `pix_keys`, `ledger_entries`, `transfers`, `auth` (services)
+- 🔲 `ledger_entries`, `transfers`, `auth` (services) — **próximo passo (Missão 3.3)**
 - 🔲 `RequestLogger` + `slog` no `main.go`
 - 🔲 Toda a Semana 4 (frontend Next.js)
 - 🔲 Toda a Semana 5 (Swagger, `.http`, README, ADR)
 
-**Tradução em progresso:** você está a ~35% da Semana 3, 0% da Semana 4 e 5. Isso é normal nesta altura — o objetivo desta seção é você sempre saber exatamente onde está, sem achismo.
+**Tradução em progresso:** você está a ~55% da Semana 3, 0% da Semana 4 e 5. Isso é normal nesta altura — o objetivo desta seção é você sempre saber exatamente onde está, sem achismo.
 
 ---
 
