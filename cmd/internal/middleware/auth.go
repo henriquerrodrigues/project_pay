@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	authrepo "project_pay/cmd/internal/repositories/authentication"
-
 	"github.com/google/uuid"
+
+	"project_pay/cmd/internal/apperrors"
+	authrepo "project_pay/cmd/internal/repositories/authentication"
 )
 
 // contextKey é um tipo próprio para evitar colisão com outras chaves no context
@@ -28,7 +29,7 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 		if !strings.HasPrefix(header, "Bearer ") {
-			http.Error(w, "token ausente", http.StatusUnauthorized)
+			apperrors.WriteHTTP(w, r, apperrors.Unauthorized("token ausente"))
 			return
 		}
 
@@ -36,7 +37,7 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 		userID, err := authrepo.VerifyToken(tokenString)
 		if err != nil {
-			http.Error(w, "token inválido", http.StatusUnauthorized)
+			apperrors.WriteHTTP(w, r, apperrors.Unauthorized("token inválido"))
 			return
 		}
 

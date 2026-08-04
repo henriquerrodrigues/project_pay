@@ -30,8 +30,8 @@ Isso é o que **já existe no código**, verificado com `go build ./... && go te
 - ✅ `apperrors` — tipo `Error`, construtores, `WriteHTTP` com trace_id, testado (4 testes)
 - ✅ `traceid` — pacote isolado, testado
 - ✅ `middleware.UserIDFromContext` — helper adicionado
-- ⚠️ `middleware.Auth` e `handlers/auth.go` **ainda não migrados** pro contrato `apperrors` (ainda usam `http.Error` cru) — ficou pra quando fizermos o service de `auth`, de propósito (é o mais complexo)
-- ⚠️ Middleware `RequestLogger` (trace ID + log estruturado por request) — **não iniciado**
+- ✅ `middleware.Auth` e `handlers/auth.go` migrados pro contrato `apperrors` (token ausente/inválido, credenciais inválidas, erro ao gerar token) — Missão 3.4 fechada. Continua sem uma camada `services/auth` própria (o plano técnico original só previa migrar middleware + handler pro contrato de erro nesta task; `VerifyCredentials`/`CreateToken` seguem no repository)
+- ✅ Middleware `RequestLogger` — trace ID (UUID v4) por request, header `X-Trace-Id`, log estruturado via `slog` (method/path/status/duration_ms/trace_id), `slog.SetDefault` com `JSONHandler` ligado no `main.go` — Missão 3.5 fechada, testado (2 testes)
 
 ### Service de `users` (Task 5)
 - ✅ Completo: `services/users`, testes (6), handler migrado, wiring no `main.go`
@@ -51,13 +51,22 @@ Isso é o que **já existe no código**, verificado com `go build ./... && go te
 - ✅ Handlers migrados pro contrato `apperrors`
 - ✅ Wiring no `main.go`
 
-### Ainda não iniciados
-- 🔲 `ledger_entries`, `transfers`, `auth` (services) — **próximo passo (Missão 3.3)**
-- 🔲 `RequestLogger` + `slog` no `main.go`
+### Services de `ledger_entries` e `transfers` (Tasks 7-8) — ✅ Missão 3.3 fechada
+- ✅ `services/ledger_entries`: `GetStatement` com ownership da conta (dono → extrato; outro dono → 403; conta inexistente → 404), usa `AccountGetter` (recorte do repository de `accounts`)
+- ✅ `ledger_entries_test.go`: 3 casos (dono, outro dono 403, conta inexistente 404) — todos passando
+- ✅ `services/transfers`: `Create` (valor > 0, contas diferentes, dono da origem, existência do destino, saldo insuficiente → `apperrors.InsufficientFunds()`) e `GetByID` (visível a quem for dono da origem OU do destino, 403 pra terceiros) — usa as duas interfaces `TransferRepository` + `AccountGetter`
+- ✅ `transfers_test.go`: 11 casos — todos passando
+- ✅ Handlers migrados pro contrato `apperrors`
+- ✅ Wiring no `main.go`
+
+### ✅ Semana 3 fechada
+Todos os services em camadas (`users`, `accounts`, `participants`, `pix_keys`, `ledger_entries`, `transfers`), contrato `apperrors` ponta a ponta (incluindo `auth`), e observabilidade básica (`RequestLogger` + `slog`) — `go build ./... && go test ./...` limpos. Falta só o marco de fechamento formal: um `curl` de ponta a ponta (login → criar conta → transferir → ver extrato) confirmando `trace_id` em toda resposta de erro (seção 4 do plano) — isso é smoke manual, não código, e depende do Postgres do compose de pé.
+
+### Ainda não iniciado
 - 🔲 Toda a Semana 4 (frontend Next.js)
 - 🔲 Toda a Semana 5 (Swagger, `.http`, README, ADR)
 
-**Tradução em progresso:** você está a ~55% da Semana 3, 0% da Semana 4 e 5. Isso é normal nesta altura — o objetivo desta seção é você sempre saber exatamente onde está, sem achismo.
+**Tradução em progresso:** Semana 3 ~95% (só falta o smoke manual de ponta a ponta), 0% da Semana 4 e 5. Isso é normal nesta altura — o objetivo desta seção é você sempre saber exatamente onde está, sem achismo.
 
 ---
 

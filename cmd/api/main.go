@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -19,17 +19,22 @@ import (
 	transfersrepo "project_pay/cmd/internal/repositories/transfers"
 	usersrepo "project_pay/cmd/internal/repositories/users"
 	accountssvc "project_pay/cmd/internal/services/accounts"
+	ledgersvc "project_pay/cmd/internal/services/ledger_entries"
 	participantssvc "project_pay/cmd/internal/services/participants"
 	pixkeyssvc "project_pay/cmd/internal/services/pix_keys"
+	transferssvc "project_pay/cmd/internal/services/transfers"
 	userssvc "project_pay/cmd/internal/services/users"
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
 	godotenv.Load()
 
 	db, err := database.Connect(context.Background())
 	if err != nil {
-		log.Fatalf("erro ao conectar no banco: %v", err)
+		slog.Error("erro ao conectar no banco", "error", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
@@ -53,10 +58,12 @@ func main() {
 	pixKeyHandler := handlers.NewPixKeyHandler(pixKeySvc)
 
 	ledgerRepo := ledgerrepo.New(db)
-	ledgerHandler := handlers.NewLedgerEntryHandler(ledgerRepo)
+	ledgerSvc := ledgersvc.New(ledgerRepo, accountRepo)
+	ledgerHandler := handlers.NewLedgerEntryHandler(ledgerSvc)
 
 	transferRepo := transfersrepo.New(db)
-	transferHandler := handlers.NewTransferHandler(transferRepo)
+	transferSvc := transferssvc.New(transferRepo, accountRepo)
+	transferHandler := handlers.NewTransferHandler(transferSvc)
 
 	mux := http.NewServeMux()
 
@@ -75,7 +82,12 @@ func main() {
 	mux.HandleFunc("POST /transfers", middleware.Auth(transferHandler.CreateTransfer))
 	mux.HandleFunc("GET /transfers/{id}", middleware.Auth(transferHandler.GetByID))
 
+	handler := middleware.RequestLogger(mux)
+
 	port := os.Getenv("API_PORT")
-	log.Printf("servidor rodando na porta %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	slog.Info("servidor rodando", "port", port)
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
+		slog.Error("servidor encerrou com erro", "error", err)
+		os.Exit(1)
+	}
 }
