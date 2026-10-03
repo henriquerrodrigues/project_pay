@@ -16,6 +16,7 @@ import (
 	ledgerrepo "project_pay/cmd/internal/repositories/ledger_entries"
 	participantsrepo "project_pay/cmd/internal/repositories/participants"
 	pixkeysrepo "project_pay/cmd/internal/repositories/pix_keys"
+	riskrepo "project_pay/cmd/internal/repositories/risk"
 	transfersrepo "project_pay/cmd/internal/repositories/transfers"
 	usersrepo "project_pay/cmd/internal/repositories/users"
 )
@@ -48,7 +49,8 @@ func main() {
 	ledgerHandler := handlers.NewLedgerEntryHandler(ledgerRepo)
 
 	transferRepo := transfersrepo.New(db)
-	transferHandler := handlers.NewTransferHandler(transferRepo)
+	riskRepo := riskrepo.New(db)
+	transferHandler := handlers.NewTransferHandler(transferRepo).WithRiskCheck(riskRepo)
 
 	mux := http.NewServeMux()
 
